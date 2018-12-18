@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
     //time settings
     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
-    MQTT mqtt = new MQTT(getApplicationContext());
+    //MQTT mqtt = new MQTT(getApplicationContext());
 
 
     @Override
