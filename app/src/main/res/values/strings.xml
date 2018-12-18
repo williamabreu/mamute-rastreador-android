@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Mamute Rastreador</string>
+    <string name="location">Localização</string>
+    <string name="start_button">Iniciar rastreamento</string>
+</resources>
