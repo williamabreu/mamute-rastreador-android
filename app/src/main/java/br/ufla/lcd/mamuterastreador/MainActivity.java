@@ -17,8 +17,18 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -33,15 +43,48 @@ public class MainActivity extends AppCompatActivity {
     private LocationListener listener_GPS;
     public static String locus;
     //time settings
-    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+    private final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
 
-    //MQTT mqtt = new MQTT(getApplicationContext());
+//    MQTT mqtt = new MQTT(getApplicationContext());
+    private String clientId;
+    private MqttAndroidClient client;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+
+        // ******************* MQTT ***********************************
+        clientId = MqttClient.generateClientId();
+        client = new MqttAndroidClient(this.getApplicationContext(), "tcp://turing.lcd.ufla.br:6064", clientId);
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setUserName("MMHdDK8sUsVWe7zBEahZwX5E");
+        options.setPassword("rfvnWGHbQNFF7M92NjQmxz99".toCharArray());
+
+        try {
+            IMqttToken token = client.connect(options);
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // We are connected
+                    Log.d("TAG", "onSuccess");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.d("TAG", "onFailure");
+
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+        // ******************* MQTT ***********************************
 
         setContentView(R.layout.activity_main);
         t = (TextView) findViewById(R.id.textView);
@@ -131,14 +174,32 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listener_GPS);
+                Toast t = Toast.makeText(getApplicationContext(),"NADA",Toast.LENGTH_LONG);
+                t.show();
+                Log.e("LOCAL", "posicao: " + locus);
+
+                try {
+                    SentUPD("oi oi oi");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             }
         });
     }
 
-    public void SentUPD(String text) throws IOException {
-        Log.d("SNET UDP","SET");
+    public void SentUPD(String payload) throws IOException {
+        Log.d("SNET UDP", "SET");
 //        mqtt.publishMessage("hello porra");
+        String topic = "foo/bar";
+        byte[] encodedPayload = new byte[0];
+        try {
+            encodedPayload = payload.getBytes("UTF-8");
+            MqttMessage message = new MqttMessage(encodedPayload);
+            client.publish(topic, message);
+        } catch (UnsupportedEncodingException | MqttException e) {
+            e.printStackTrace();
+        }
     }
 }
 
