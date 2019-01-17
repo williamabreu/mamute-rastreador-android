@@ -8,11 +8,8 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import static android.support.v4.content.ContextCompat.getSystemService;
 
 /* @link https://developer.android.com/reference/android/location/Location */
 
@@ -23,23 +20,54 @@ public class GPS extends AppCompatActivity {
 
     private String time;
     private String date;
-    private Double latitude;
-    private Double longitude;
-    private Double curse;
-    private Double altitude;
-    private Double speed;
+    private double latitude;
+    private double longitude;
+    private double altitude;
+    private double speed;
+    private float curse;
+
+    public String getTime() {
+        return time;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public double getAltitude() {
+        return altitude;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public float getCurse() {
+        return curse;
+    }
 
     public GPS() {
-        dateFormat = new SimpleDateFormat("HH:mm:ss");
+        dateFormat = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         listenerGPS = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                time = dateFormat.format(new Date());
+                String[] datetime = dateFormat.format(new Date()).split(" ");
+                time = datetime[0];
+                date = datetime[1];
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
                 altitude = location.getAltitude();
                 speed = location.getSpeed() * 3.6;
+                curse = location.getBearing();
             }
 
             @Override
@@ -59,5 +87,4 @@ public class GPS extends AppCompatActivity {
             }
         };
     }
-
 }
