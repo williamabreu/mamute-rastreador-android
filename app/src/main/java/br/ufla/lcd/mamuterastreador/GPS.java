@@ -1,5 +1,6 @@
 package br.ufla.lcd.mamuterastreador;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
@@ -8,6 +9,11 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -17,6 +23,7 @@ public class GPS extends AppCompatActivity {
     private final SimpleDateFormat dateFormat;
     private final LocationManager locationManager;
     private final LocationListener listenerGPS;
+    private final MQTT mqttBroker;
 
     private String time;
     private String date;
@@ -26,35 +33,27 @@ public class GPS extends AppCompatActivity {
     private double speed;
     private float curse;
 
-    public String getTime() {
-        return time;
+    @Override
+    public String toString() {
+        try {
+            JSONObject json = new JSONObject();
+            json.put("time", time);
+            json.put("date", date);
+            json.put("latitude", latitude);
+            json.put("longitude", longitude);
+            json.put("curse", curse);
+            json.put("altitude", altitude);
+            json.put("speed", speed);
+            return json.toString();
+        }
+        catch (JSONException e) {
+            return "";
+        }
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public double getAltitude() {
-        return altitude;
-    }
-
-    public double getSpeed() {
-        return speed;
-    }
-
-    public float getCurse() {
-        return curse;
-    }
-
-    public GPS() {
+    @SuppressLint("MissingPermission")
+    public GPS(MQTT mqtt) {
+        mqttBroker = mqtt;
         dateFormat = new SimpleDateFormat("HH:mm:ss dd/MM/yyyy");
         locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         listenerGPS = new LocationListener() {
@@ -68,6 +67,13 @@ public class GPS extends AppCompatActivity {
                 altitude = location.getAltitude();
                 speed = location.getSpeed() * 3.6;
                 curse = location.getBearing();
+
+                try {
+                    mqttBroker.publish("ERT-6789", this.toString());
+                }
+                catch (MqttException | UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -86,5 +92,7 @@ public class GPS extends AppCompatActivity {
                 startActivity(i);
             }
         };
+
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, listenerGPS);
     }
 }

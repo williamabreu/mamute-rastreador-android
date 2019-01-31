@@ -1,6 +1,6 @@
 package br.ufla.lcd.mamuterastreador;
 
-import android.content.Context;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
@@ -15,15 +15,15 @@ import java.io.UnsupportedEncodingException;
 
 /* https://www.hivemq.com/blog/mqtt-client-library-enyclopedia-paho-android-service */
 
-public class MQTT {
+public class MQTT extends AppCompatActivity {
     private final String clientId;
     private final MqttAndroidClient mqttClient;
     private final MqttConnectOptions options;
 
-    public MQTT(Context context) {
+    public MQTT() {
         clientId = MqttClient.generateClientId();
         options = new MqttConnectOptions();
-        mqttClient = new MqttAndroidClient(context, "tcp://turing.lcd.ufla.br:6064", clientId);
+        mqttClient = new MqttAndroidClient(getApplicationContext(), "tcp://turing.lcd.ufla.br:6064", clientId);
         options.setUserName("MMHdDK8sUsVWe7zBEahZwX5E");
         options.setPassword("rfvnWGHbQNFF7M92NjQmxz99".toCharArray());
     }
